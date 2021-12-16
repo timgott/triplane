@@ -99,11 +99,16 @@ void tboxi(int x1, int y1, int x2, int y2, unsigned char vari) {
 }
 
 /*
- * Blits the world with offset shifted by (world_offset_x, world_offset_y) and clipped to (tx1,ty1,tx2,ty2)
+ * Draws terrain with offset shifted by (world_offset_x, world_offset_y) and clipped to (tx1,ty1,tx2,ty2)
  */
-static void draw_world(int world_offset_x, int world_offset_y, int tx1, int ty1, int tx2, int ty2) {
+static void draw_terrain(int world_offset_x, int world_offset_y, int tx1, int ty1, int tx2, int ty2) {
     maisema->blit(world_offset_x, world_offset_y, tx1, ty1, tx2, ty2);
+}
 
+/*
+ * Draws all objects with offset shifted by (world_offset_x, world_offset_y) and clipped to (tx1,ty1,tx2,ty2)
+ */
+static void draw_objects(int world_offset_x, int world_offset_y, int tx1, int ty1, int tx2, int ty2) {
     int l2;
     for (l2 = 0; l2 < MAX_STRUCTURES; l2++) {
         if ((structures[l2][struct_state[l2]] != NULL) && (!leveldata.struct_hit[l2]))
@@ -351,6 +356,11 @@ static void draw_world(int world_offset_x, int world_offset_y, int tx1, int ty1,
     }
 }
 
+static void draw_terrain_and_objects(int world_offset_x, int world_offset_y, int tx1, int ty1, int tx2, int ty2) {
+    draw_terrain(world_offset_x, world_offset_y, tx1, ty1, tx2, ty2);
+    draw_objects(world_offset_x, world_offset_y, tx1, ty1, tx2, ty2);
+}
+
 void terrain_to_screen(void) {
     int l, l2;
     int tempx, tempy;
@@ -390,9 +400,10 @@ void terrain_to_screen(void) {
             int screen_y1 = y1_raja[l] + in_closing[l];
             int screen_x2 = x2_raja[l];
             int screen_y2 = y2_raja[l];
+            int world_offset_x = player_shown_x[l] - (player_x_8[l]) + x_muutos[l];
+            int world_offset_y = player_shown_y[l] - (player_y_8[l]) + y_muutos[l];
 
-            draw_world(player_shown_x[l] - (player_x_8[l]) + x_muutos[l], player_shown_y[l] - (player_y_8[l]) + y_muutos[l],
-                screen_x1, screen_y1, screen_x2, screen_y2);
+            draw_terrain_and_objects(world_offset_x, world_offset_y, screen_x1, screen_y1, screen_x2, screen_y2);   
 
             // draw radar markers
             for (int l2 = 0; l2 < 16; l2++) {
@@ -563,7 +574,8 @@ void solo_terrain_to_screen(void) {
     if (((player_x_8[l]) - player_shown_x[l]) < 0)
         player_shown_x[l] += ((player_x_8[l]) - player_shown_x[l]);
 
-    draw_world(player_shown_x[l] - (player_x_8[l]), 0, 0, 0, screen_width_less, screen_height_less);
+    // Sky and terrain behind UI
+    draw_terrain(player_shown_x[l] - (player_x_8[l]), 0, 0, 0, screen_width_less, screen_height_less);
 
     boards[l]->blit(0, 0);
     board2->blit(158, 0);
@@ -628,6 +640,9 @@ void solo_terrain_to_screen(void) {
     fontti->printf(142, 3, "%3d", abs(player_points[l]));
     if (player_points[l] < 0)
         fontti->printf(142, 3, "-");
+
+    // Draw objects (in front of UI)
+    draw_objects(player_shown_x[l] - (player_x_8[l]), 0, 0, 0, screen_width_less, screen_height_less);
     
     if (hangarmenu_active[l]) {
 
@@ -660,9 +675,6 @@ void solo_terrain_to_screen(void) {
             break;
 
         }
-
-
-
     }
 
     // draw radar markers
@@ -810,18 +822,18 @@ void vesa_terrain_to_screen(void) {
     // Draw world
     if (split_num == 0)
     {
-        draw_world(0, -4, 0, 0, screen_width_less, screen_height_less);
+        draw_terrain_and_objects(0, -4, 0, 0, screen_width_less, screen_height_less);
     }
     else if (split_num == 1)
     {
-        draw_world(-screen_width, 192, 0, 0, screen_width_less, screen_height_less);
-        draw_world(0, -4, 0, 0, screen_width_less, screen_height_less);
+        draw_terrain_and_objects(-screen_width, 192, 0, 0, screen_width_less, screen_height_less);
+        draw_terrain_and_objects(0, -4, 0, 0, screen_width_less, screen_height_less);
     }
     else
     {
-        draw_world(-2 * screen_width, 388, 0, 0, screen_width_less, screen_height_less);
-        draw_world(-screen_width, 192, 0, 0, screen_width_less, screen_height_less);
-        draw_world(0, -4, 0, 0, screen_width_less, screen_height_less);
+        draw_terrain_and_objects(-2 * screen_width, 388, 0, 0, screen_width_less, screen_height_less);
+        draw_terrain_and_objects(-screen_width, 192, 0, 0, screen_width_less, screen_height_less);
+        draw_terrain_and_objects(0, -4, 0, 0, screen_width_less, screen_height_less);
     }
 
     // Update player hangar timer
