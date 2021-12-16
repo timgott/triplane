@@ -98,6 +98,259 @@ void tboxi(int x1, int y1, int x2, int y2, unsigned char vari) {
     draw_line(x2, y2, x1, y2, vari);
 }
 
+/*
+ * Blits the world with offset shifted by (world_offset_x, world_offset_y) and clipped to (tx1,ty1,tx2,ty2)
+ */
+static void draw_world(int world_offset_x, int world_offset_y, int tx1, int ty1, int tx2, int ty2) {
+    maisema->blit(world_offset_x, world_offset_y, tx1, ty1, tx2, ty2);
+
+    int l2;
+    for (l2 = 0; l2 < MAX_STRUCTURES; l2++) {
+        if ((structures[l2][struct_state[l2]] != NULL) && (!leveldata.struct_hit[l2]))
+            structures[l2][struct_state[l2]]->blit((leveldata.struct_x[l2]) + world_offset_x,
+                                                    (leveldata.struct_y[l2]) + world_offset_y, tx1, ty1,
+                                                    tx2, ty2);
+
+    }
+
+    for (l2 = 0; l2 < 4; l2++) {
+        if (!hangar_x[l2])
+            continue;
+        ovi[hangar_door_frame[l2]]->blit(hangar_x[l2] + 27 + world_offset_x,
+                                            hangar_y[l2] + 3 + world_offset_y, tx1, ty1, tx2, ty2);
+
+    }
+
+    if (config.flags)
+        for (l2 = 0; l2 < MAX_FLAGS; l2++) {
+            if (flags_x[l2]) {
+
+                flags[flags_owner[l2]][flags_frame[l2]]->blit(flags_x[l2] + world_offset_x,
+                                                                flags_y[l2] + world_offset_y, tx1, ty1,
+                                                                tx2, ty2);
+
+            }
+        }
+
+
+    for (l2 = 0; l2 < MAX_AA_GUNS; l2++) {
+        if (!kkbase_x[l2])
+            continue;
+
+        if (kkbase_status[l2] != 2) {
+            kkbase[kkbase_type[l2]][kkbase_status[l2]][kkbase_frame[l2]]->blit(kkbase_x[l2] + world_offset_x,
+                                                                                kkbase_y[l2] + world_offset_y,
+                                                                                tx1, ty1, tx2, ty2);
+        } else {
+            kkbase[kkbase_type[l2]][kkbase_status[l2]][kkbase_frame[l2] >> 1]->blit(kkbase_x[l2] + world_offset_x,
+                                                                                    kkbase_y[l2] + world_offset_y,
+                                                                                    tx1, ty1, tx2, ty2);
+        }
+    }
+
+    for (l2 = 0; l2 < MAX_INFANTRY; l2++) {
+        if (!infan_x[l2])
+            continue;
+
+        switch (infan_state[l2]) {
+        case 0:
+            if (infan_frame[l2] < 12)
+                infantry_walking[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + world_offset_x,
+                                                                                                infan_y[l2] + world_offset_y,
+                                                                                                tx1, ty1, tx2, ty2);
+            else {
+                if (infan_frame[l2] == 12)
+                    infantry_dropping[infan_country[l2]][infan_direction[l2]]->blit(infan_x[l2] + world_offset_x,
+                                                                                    infan_y[l2] + world_offset_y,
+                                                                                    tx1, ty1, tx2, ty2);
+                else
+                    infantry_after_drop[infan_country[l2]][infan_direction[l2]]->blit(infan_x[l2] + world_offset_x,
+                                                                                        infan_y[l2] + world_offset_y,
+                                                                                        tx1, ty1, tx2, ty2);
+            }
+            break;
+
+        case 1:
+
+            infantry_aiming[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + world_offset_x,
+                                                                                            infan_y[l2] + world_offset_y,
+                                                                                            tx1, ty1, tx2, ty2);
+            break;
+
+        case 2:
+
+            infantry_shooting[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + world_offset_x,
+                                                                                                infan_y[l2] + world_offset_y,
+                                                                                                tx1, ty1, tx2, ty2);
+            break;
+
+        case 3:
+
+            infantry_dying[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + world_offset_x,
+                                                                                                infan_y[l2] + world_offset_y,
+                                                                                                tx1, ty1, tx2, ty2);
+            break;
+
+        case 4:
+
+            infantry_wavedeath[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + world_offset_x,
+                                                                                                    infan_y[l2] + world_offset_y,
+                                                                                                    tx1, ty1, tx2, ty2);
+            break;
+
+        case 5:
+
+            infantry_bdying[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + world_offset_x,
+                                                                                                infan_y[l2] + world_offset_y,
+                                                                                                tx1, ty1, tx2, ty2);
+            break;
+
+        }
+    }
+
+    ///
+    for (l2 = 0; l2 < 4; l2++) {
+        if (!mekan_x[l2])
+            continue;
+
+        switch (mekan_status[l2]) {
+        case 1:
+            mekan_running[mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + world_offset_x,
+                                                                        mekan_y[l2] + world_offset_y, tx1,
+                                                                        ty1, tx2, ty2);
+            break;
+
+        case 2:
+            mekan_pushing[0][mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + world_offset_x,
+                                                                            mekan_y[l2] + world_offset_y, tx1,
+                                                                            ty1, tx2, ty2);
+            break;
+
+        case 3:
+            mekan_pushing[1][mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + world_offset_x,
+                                                                            mekan_y[l2] + world_offset_y, tx1,
+                                                                            ty1, tx2, ty2);
+            break;
+
+
+        }
+
+    }
+
+    for (l2 = 0; l2 < MAX_BOMBS; l2++)
+        if (bomb_x[l2])
+            bomb[(bomb_angle[l2] >> 8) / 6]->blit((bomb_x[l2] >> 8) - (4) + world_offset_x,
+                                                    (bomb_y[l2] >> 8) - (4) + world_offset_y, tx1,
+                                                    ty1, tx2, ty2);
+
+    for (l2 = 0; l2 < 16; l2++)
+        if (!in_closing[l2] && player_exists[l2] && !plane_coming[l2]) {
+            if (l2 < 4) {
+                if (hangarmenu_active[l2])
+                    continue;
+
+            }
+
+            planes[l2][(player_angle[l2] >> 8) / 6][player_rolling[l2]][player_upsidedown[l2]]->blit((player_x_8[l2]) - 10 + world_offset_x,
+                                                                                                        (player_y_8[l2]) - 10 + world_offset_y, tx1,
+                                                                                                        ty1, tx2, ty2);
+        } else {
+            if (in_closing[l2] <= 12 && player_exists[l2] && !plane_coming[l2])
+                plane_crash[(in_closing[l2] >> 1) - 1]->blit((player_x_8[l2]) - 10 + world_offset_x,
+                                                                (player_y_8[l2]) - 10 + world_offset_y, tx1,
+                                                                ty1, tx2, ty2);
+
+        }
+
+    if (config.shots_visible)
+        for (l2 = 0; l2 < MAX_SHOTS; l2++) {
+            if (shots_flying_x[l2])
+                putpix((shots_flying_x[l2] >> 8) + world_offset_x,
+                        (shots_flying_y[l2] >> 8) + world_offset_y, SHOTS_COLOR, tx1, ty1, tx2, ty2);
+
+        }
+
+    if (config.it_shots_visible)
+        for (l2 = 0; l2 < MAX_ITGUN_SHOTS; l2++) {
+            if (itgun_shot_x[l2])
+                putpix((itgun_shot_x[l2] >> 8) + world_offset_x,
+                        (itgun_shot_y[l2] >> 8) + world_offset_y, ITGUN_SHOT_COLOR, tx1, ty1,
+                        tx2, ty2);
+
+        }
+
+    for (l2 = 0; l2 < MAX_FLYING_OBJECTS; l2++) {
+        if (fobjects[l2].x) {
+            switch (fobjects[l2].type) {
+            case FOBJECTS_SMOKE:
+                smoke[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y,
+                                                tx1, ty1, tx2, ty2);
+                break;
+
+
+            case FOBJECTS_SSMOKE:
+                ssmoke[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                    (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y,
+                                                    tx1, ty1, tx2, ty2);
+                break;
+
+
+
+            case FOBJECTS_RIFLE:
+                rifle[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y,
+                                                tx1, ty1, tx2, ty2);
+                break;
+
+
+            case FOBJECTS_FLAME:
+                if (config.flames)
+                    flames[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                        (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y, tx1, ty1, tx2, ty2);
+                break;
+
+
+            case FOBJECTS_WAVE1:
+                wave1[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y,
+                                                tx1, ty1, tx2, ty2);
+                break;
+
+            case FOBJECTS_WAVE2:
+                wave2[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y,
+                                                tx1, ty1, tx2, ty2);
+                break;
+
+            case FOBJECTS_ITEXPLOSION:
+                itexplosion[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                        (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y, 
+                                                        tx1, ty1, tx2, ty2);
+                break;
+
+            case FOBJECTS_EXPLOX:
+                if (fobjects[l2].phase < 0)
+                    break;
+                explox[fobjects[l2].subtype][fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                                        (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y, 
+                                                                        tx1, ty1, tx2, ty2);
+                break;
+
+            case FOBJECTS_PARTS:
+                bites[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1) + world_offset_x,
+                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1) + world_offset_y,
+                                                tx1, ty1, tx2, ty2);
+                break;
+
+            }
+
+
+        }
+
+    }
+}
+
 void terrain_to_screen(void) {
     int l, l2;
     int tempx, tempy;
@@ -133,167 +386,20 @@ void terrain_to_screen(void) {
             if (((player_y_8[l]) - player_shown_y[l]) < 0)
                 player_shown_y[l] += ((player_y_8[l]) - player_shown_y[l]);
 
+            int screen_x1 = x1_raja[l];
+            int screen_y1 = y1_raja[l] + in_closing[l];
+            int screen_x2 = x2_raja[l];
+            int screen_y2 = y2_raja[l];
 
+            draw_world(player_shown_x[l] - (player_x_8[l]) + x_muutos[l], player_shown_y[l] - (player_y_8[l]) + y_muutos[l],
+                screen_x1, screen_y1, screen_x2, screen_y2);
 
-            maisema->blit(player_shown_x[l] - (player_x_8[l]) + x_muutos[l], player_shown_y[l] - (player_y_8[l]) + y_muutos[l], x1_raja[l],
-                          y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-
-            for (l2 = 0; l2 < MAX_STRUCTURES; l2++) {
-                if ((structures[l2][struct_state[l2]] != NULL) && (!leveldata.struct_hit[l2]))
-                    structures[l2][struct_state[l2]]->blit((leveldata.struct_x[l2]) + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                           (leveldata.struct_y[l2]) + player_shown_y[l] - (player_y_8[l]) + y_muutos[l], x1_raja[l], y1_raja[l],
-                                                           x2_raja[l], y2_raja[l]);
-
-            }
-
-            for (l2 = 0; l2 < 4; l2++) {
-                if (!hangar_x[l2])
-                    continue;
-                ovi[hangar_door_frame[l2]]->blit(hangar_x[l2] + 27 + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                 hangar_y[l2] + 3 + player_shown_y[l] - (player_y_8[l]) + y_muutos[l], x1_raja[l], y1_raja[l], x2_raja[l],
-                                                 y2_raja[l]);
-
-            }
-
-            if (config.flags)
-                for (l2 = 0; l2 < MAX_FLAGS; l2++) {
-                    if (flags_x[l2]) {
-
-                        flags[flags_owner[l2]][flags_frame[l2]]->blit(flags_x[l2] + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                                      flags_y[l2] + player_shown_y[l] - (player_y_8[l]) + y_muutos[l], x1_raja[l], y1_raja[l],
-                                                                      x2_raja[l], y2_raja[l]);
-
-                    }
-                }
-
-
-            for (l2 = 0; l2 < MAX_AA_GUNS; l2++) {
-                if (!kkbase_x[l2])
-                    continue;
-
-                if (kkbase_status[l2] != 2) {
-                    kkbase[kkbase_type[l2]][kkbase_status[l2]][kkbase_frame[l2]]->blit(kkbase_x[l2] + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                                                       kkbase_y[l2] + player_shown_y[l] - (player_y_8[l]) + y_muutos[l],
-                                                                                       x1_raja[l], y1_raja[l], x2_raja[l], y2_raja[l]);
-                } else {
-                    kkbase[kkbase_type[l2]][kkbase_status[l2]][kkbase_frame[l2] >> 1]->blit(kkbase_x[l2] + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                                                            kkbase_y[l2] + player_shown_y[l] - (player_y_8[l]) + y_muutos[l],
-                                                                                            x1_raja[l], y1_raja[l], x2_raja[l], y2_raja[l]);
-                }
-            }
-
-            for (l2 = 0; l2 < MAX_INFANTRY; l2++) {
-                if (!infan_x[l2])
-                    continue;
-
-                switch (infan_state[l2]) {
-                case 0:
-                    if (infan_frame[l2] < 12)
-                        infantry_walking[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]) +
-                                                                                                        x_muutos[l],
-                                                                                                        infan_y[l2] + player_shown_y[l] - (player_y_8[l]) +
-                                                                                                        y_muutos[l], x1_raja[l], y1_raja[l], x2_raja[l],
-                                                                                                        y2_raja[l]);
-                    else {
-                        if (infan_frame[l2] == 12)
-                            infantry_dropping[infan_country[l2]][infan_direction[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                                                            infan_y[l2] + player_shown_y[l] - (player_y_8[l]) + y_muutos[l],
-                                                                                            x1_raja[l], y1_raja[l], x2_raja[l], y2_raja[l]);
-                        else
-                            infantry_after_drop[infan_country[l2]][infan_direction[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                                                              infan_y[l2] + player_shown_y[l] - (player_y_8[l]) + y_muutos[l],
-                                                                                              x1_raja[l], y1_raja[l], x2_raja[l], y2_raja[l]);
-                    }
-                    break;
-
-                case 1:
-
-                    infantry_aiming[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]) +
-                                                                                                   x_muutos[l],
-                                                                                                   infan_y[l2] + player_shown_y[l] - (player_y_8[l]) +
-                                                                                                   y_muutos[l], x1_raja[l], y1_raja[l], x2_raja[l], y2_raja[l]);
-                    break;
-
-                case 2:
-
-                    infantry_shooting[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]) +
-                                                                                                     x_muutos[l],
-                                                                                                     infan_y[l2] + player_shown_y[l] - (player_y_8[l]) +
-                                                                                                     y_muutos[l], x1_raja[l], y1_raja[l], x2_raja[l],
-                                                                                                     y2_raja[l]);
-                    break;
-
-                case 3:
-
-                    infantry_dying[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]) +
-                                                                                                       x_muutos[l],
-                                                                                                       infan_y[l2] + player_shown_y[l] - (player_y_8[l]) +
-                                                                                                       y_muutos[l], x1_raja[l], y1_raja[l], x2_raja[l],
-                                                                                                       y2_raja[l]);
-                    break;
-
-                case 4:
-
-                    infantry_wavedeath[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]) +
-                                                                                                           x_muutos[l],
-                                                                                                           infan_y[l2] + player_shown_y[l] - (player_y_8[l]) +
-                                                                                                           y_muutos[l], x1_raja[l], y1_raja[l], x2_raja[l],
-                                                                                                           y2_raja[l]);
-                    break;
-
-                case 5:
-
-                    infantry_bdying[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]) +
-                                                                                                        x_muutos[l],
-                                                                                                        infan_y[l2] + player_shown_y[l] - (player_y_8[l]) +
-                                                                                                        y_muutos[l], x1_raja[l], y1_raja[l], x2_raja[l],
-                                                                                                        y2_raja[l]);
-                    break;
-
-                }
-            }
-
-            ///
-            for (l2 = 0; l2 < 4; l2++) {
-                if (!mekan_x[l2])
-                    continue;
-
-                switch (mekan_status[l2]) {
-                case 1:
-                    mekan_running[mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                                              mekan_y[l2] + player_shown_y[l] - (player_y_8[l]) + y_muutos[l], x1_raja[l],
-                                                                              y1_raja[l], x2_raja[l], y2_raja[l]);
-                    break;
-
-                case 2:
-                    mekan_pushing[0][mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                                                 mekan_y[l2] + player_shown_y[l] - (player_y_8[l]) + y_muutos[l], x1_raja[l],
-                                                                                 y1_raja[l], x2_raja[l], y2_raja[l]);
-                    break;
-
-                case 3:
-                    mekan_pushing[1][mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                                                                                 mekan_y[l2] + player_shown_y[l] - (player_y_8[l]) + y_muutos[l], x1_raja[l],
-                                                                                 y1_raja[l], x2_raja[l], y2_raja[l]);
-                    break;
-
-
-                }
-
-            }
-
-            for (l2 = 0; l2 < MAX_BOMBS; l2++)
-                if (bomb_x[l2])
-                    bomb[(bomb_angle[l2] >> 8) / 6]->blit((bomb_x[l2] >> 8) + player_shown_x[l] - (player_x_8[l]) - (4) + x_muutos[l],
-                                                          (bomb_y[l2] >> 8) + player_shown_y[l] - (player_y_8[l]) - (4) + y_muutos[l], x1_raja[l],
-                                                          y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-
-            for (l2 = 0; l2 < 16; l2++)
+            // draw radar markers
+            for (int l2 = 0; l2 < 16; l2++) {
                 if (!in_closing[l2] && player_exists[l2] && !plane_coming[l2]) {
                     if (l2 < 4) {
                         if (hangarmenu_active[l2])
                             continue;
-
                     }
 
                     tempx = player_x_8[l2] + player_shown_x[l] - player_x_8[l];
@@ -308,121 +414,10 @@ void terrain_to_screen(void) {
                         tempx = tempx >> 5;
                         tempy = tempy >> 2;
 
-                        radar[player_tsides[l2]][temp]->blit(x1_raja[l], y_muutos[l] + 44 + tempy, x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l],
-                                                             y2_raja[l]);
-                        radar[player_tsides[l2]][temp]->blit(x_muutos[l] + 78 + tempx, y1_raja[l], x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l],
-                                                             y2_raja[l]);
-
-
-
+                        radar[player_tsides[l2]][temp]->blit(screen_x1, y_muutos[l] + 44 + tempy, screen_x1, screen_y1, screen_x2, screen_y2);
+                        radar[player_tsides[l2]][temp]->blit(x_muutos[l] + 78 + tempx, screen_y1, screen_x1, screen_y1, screen_x2, screen_y2);
                     }
-
-                    planes[l2][(player_angle[l2] >> 8) / 6][player_rolling[l2]][player_upsidedown[l2]]->blit((player_x_8[l2]) + player_shown_x[l] -
-                                                                                                             (player_x_8[l]) - 10 + x_muutos[l],
-                                                                                                             (player_y_8[l2]) + player_shown_y[l] -
-                                                                                                             (player_y_8[l]) - 10 + y_muutos[l], x1_raja[l],
-                                                                                                             y1_raja[l] + in_closing[l], x2_raja[l],
-                                                                                                             y2_raja[l]);
-                } else {
-                    if (in_closing[l2] <= 12 && player_exists[l2] && !plane_coming[l2])
-                        plane_crash[(in_closing[l2] >> 1) - 1]->blit((player_x_8[l2]) + player_shown_x[l] - (player_x_8[l]) - 10 + x_muutos[l],
-                                                                     (player_y_8[l2]) + player_shown_y[l] - (player_y_8[l]) - 10 + y_muutos[l], x1_raja[l],
-                                                                     y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-
                 }
-
-            if (config.shots_visible)
-                for (l2 = 0; l2 < MAX_SHOTS; l2++) {
-                    if (shots_flying_x[l2])
-                        putpix((shots_flying_x[l2] >> 8) + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                               (shots_flying_y[l2] >> 8) + player_shown_y[l] - (player_y_8[l]) + y_muutos[l], SHOTS_COLOR, x1_raja[l], y1_raja[l], x2_raja[l],
-                               y2_raja[l]);
-
-                }
-
-            if (config.it_shots_visible)
-                for (l2 = 0; l2 < MAX_ITGUN_SHOTS; l2++) {
-                    if (itgun_shot_x[l2])
-                        putpix((itgun_shot_x[l2] >> 8) + player_shown_x[l] - (player_x_8[l]) + x_muutos[l],
-                               (itgun_shot_y[l2] >> 8) + player_shown_y[l] - (player_y_8[l]) + y_muutos[l], ITGUN_SHOT_COLOR, x1_raja[l], y1_raja[l],
-                               x2_raja[l], y2_raja[l]);
-
-                }
-
-            for (l2 = 0; l2 < MAX_FLYING_OBJECTS; l2++) {
-                if (fobjects[l2].x) {
-                    switch (fobjects[l2].type) {
-                    case FOBJECTS_SMOKE:
-                        smoke[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1) + x_muutos[l],
-                                                        (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) - (fobjects[l2].height >> 1) + y_muutos[l],
-                                                        x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-                        break;
-
-
-                    case FOBJECTS_SSMOKE:
-                        ssmoke[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1) + x_muutos[l],
-                                                         (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) - (fobjects[l2].height >> 1) + y_muutos[l],
-                                                         x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-                        break;
-
-
-
-                    case FOBJECTS_RIFLE:
-                        rifle[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1) + x_muutos[l],
-                                                        (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) - (fobjects[l2].height >> 1) + y_muutos[l],
-                                                        x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-                        break;
-
-
-                    case FOBJECTS_FLAME:
-                        if (config.flames)
-                            flames[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1) +
-                                                             x_muutos[l],
-                                                             (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) - (fobjects[l2].height >> 1) +
-                                                             y_muutos[l], x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-                        break;
-
-
-                    case FOBJECTS_WAVE1:
-                        wave1[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1) + x_muutos[l],
-                                                        (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) - (fobjects[l2].height >> 1) + y_muutos[l],
-                                                        x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-                        break;
-
-                    case FOBJECTS_WAVE2:
-                        wave2[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1) + x_muutos[l],
-                                                        (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) - (fobjects[l2].height >> 1) + y_muutos[l],
-                                                        x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-                        break;
-
-                    case FOBJECTS_ITEXPLOSION:
-                        itexplosion[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1) +
-                                                              x_muutos[l],
-                                                              (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) - (fobjects[l2].height >> 1) +
-                                                              y_muutos[l], x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-                        break;
-
-                    case FOBJECTS_EXPLOX:
-                        if (fobjects[l2].phase < 0)
-                            break;
-                        explox[fobjects[l2].subtype][fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) -
-                                                                               (fobjects[l2].width >> 1) + x_muutos[l],
-                                                                               (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) -
-                                                                               (fobjects[l2].height >> 1) + y_muutos[l], x1_raja[l], y1_raja[l] + in_closing[l],
-                                                                               x2_raja[l], y2_raja[l]);
-                        break;
-
-                    case FOBJECTS_PARTS:
-                        bites[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1) + x_muutos[l],
-                                                        (fobjects[l2].y >> 8) + player_shown_y[l] - (player_y_8[l]) - (fobjects[l2].height >> 1) + y_muutos[l],
-                                                        x1_raja[l], y1_raja[l] + in_closing[l], x2_raja[l], y2_raja[l]);
-                        break;
-
-                    }
-
-
-                }
-
             }
         }
 
@@ -568,6 +563,8 @@ void solo_terrain_to_screen(void) {
     if (((player_x_8[l]) - player_shown_x[l]) < 0)
         player_shown_x[l] += ((player_x_8[l]) - player_shown_x[l]);
 
+    draw_world(player_shown_x[l] - (player_x_8[l]), 0, 0, 0, screen_width_less, screen_height_less);
+
     boards[l]->blit(0, 0);
     board2->blit(158, 0);
 
@@ -628,44 +625,10 @@ void solo_terrain_to_screen(void) {
 
     gas_icon->blit(1 + (player_gas[l] >> 8) * 3, 2 - (((player_gas[l] - ((player_gas[l] >> 8) << 8))) >> 5), 0, 2, 319, 9);
 
-
-
     fontti->printf(142, 3, "%3d", abs(player_points[l]));
     if (player_points[l] < 0)
         fontti->printf(142, 3, "-");
-
-    for (l2 = 0; l2 < MAX_STRUCTURES; l2++) {
-        if ((structures[l2][struct_state[l2]] != NULL) && (!leveldata.struct_hit[l2]))
-            structures[l2][struct_state[l2]]->blit((leveldata.struct_x[l2]) + player_shown_x[l] - (player_x_8[l]), leveldata.struct_y[l2]);
-
-    }
-
-    for (l2 = 0; l2 < 4; l2++) {
-        if (!hangar_x[l2])
-            continue;
-        ovi[hangar_door_frame[l2]]->blit(hangar_x[l2] + 27 + player_shown_x[l] - (player_x_8[l]), hangar_y[l2] + 3);
-
-    }
-
-    if (config.flags)
-        for (l2 = 0; l2 < MAX_FLAGS; l2++) {
-            if (flags_x[l2]) {
-
-                flags[flags_owner[l2]][flags_frame[l2]]->blit(flags_x[l2] + player_shown_x[l] - (player_x_8[l]), flags_y[l2]);
-
-            }
-        }
-
-    for (l2 = 0; l2 < MAX_AA_GUNS; l2++) {
-        if (!kkbase_x[l2])
-            continue;
-
-        if (kkbase_status[l2] != 2)
-            kkbase[kkbase_type[l2]][kkbase_status[l2]][kkbase_frame[l2]]->blit(kkbase_x[l2] + player_shown_x[l] - (player_x_8[l]), kkbase_y[l2]);
-        else
-            kkbase[kkbase_type[l2]][kkbase_status[l2]][kkbase_frame[l2] >> 1]->blit(kkbase_x[l2] + player_shown_x[l] - (player_x_8[l]), kkbase_y[l2]);
-    }
-
+    
     if (hangarmenu_active[l]) {
 
         hangarmenu->blit(0, 15);
@@ -702,76 +665,7 @@ void solo_terrain_to_screen(void) {
 
     }
 
-    for (l2 = 0; l2 < MAX_INFANTRY; l2++) {
-        if (!infan_x[l2])
-            continue;
-
-        switch (infan_state[l2]) {
-        case 0:
-            if (infan_frame[l2] < 12)
-                infantry_walking[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]), infan_y[l2]);
-            else {
-                if (infan_frame[l2] == 12)
-                    infantry_dropping[infan_country[l2]][infan_direction[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]), infan_y[l2]);
-                else
-                    infantry_after_drop[infan_country[l2]][infan_direction[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]), infan_y[l2]);
-
-            }
-            break;
-
-        case 1:
-            infantry_aiming[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]), infan_y[l2]);
-            break;
-
-        case 2:
-            infantry_shooting[infan_country[l2]][infan_direction[l2]][infan_frame[l2]]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]), infan_y[l2]);
-            break;
-
-        case 3:
-            infantry_dying[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]), infan_y[l2]);
-            break;
-
-        case 4:
-            infantry_wavedeath[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]),
-                                                                                                   infan_y[l2]);
-            break;
-
-        case 5:
-            infantry_bdying[infan_country[l2]][infan_direction[l2]][infan_frame[l2] >> 1]->blit(infan_x[l2] + player_shown_x[l] - (player_x_8[l]), infan_y[l2]);
-            break;
-
-        }
-    }
-
-    /// Mechanic
-
-    for (l2 = 0; l2 < 4; l2++) {
-        if (!mekan_x[l2])
-            continue;
-
-        switch (mekan_status[l2]) {
-        case 1:
-            mekan_running[mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + player_shown_x[l] - (player_x_8[l]), mekan_y[l2]);
-            break;
-
-        case 2:
-            mekan_pushing[0][mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + player_shown_x[l] - (player_x_8[l]), mekan_y[l2]);
-            break;
-
-        case 3:
-            mekan_pushing[1][mekan_frame[l2]][mekan_direction[l2]]->blit(mekan_x[l2] + player_shown_x[l] - (player_x_8[l]), mekan_y[l2]);
-            break;
-
-
-        }
-
-    }
-
-
-    for (l2 = 0; l2 < MAX_BOMBS; l2++)
-        if (bomb_x[l2])
-            bomb[(bomb_angle[l2] >> 8) / 6]->blit((bomb_x[l2] >> 8) + player_shown_x[l] - (player_x_8[l]) - (4), (bomb_y[l2] >> 8) - (4));
-
+    // draw radar markers
     for (l2 = 0; l2 < 16; l2++)
         if (!in_closing[l2] && player_exists[l2] && !plane_coming[l2]) {
             if (l2 < 4) {
@@ -792,92 +686,7 @@ void solo_terrain_to_screen(void) {
                 else
                     radar[player_tsides[l2]][temp]->blit(317, player_y_8[l2] - 1);
             }
-
-            planes[l2][(player_angle[l2] >> 8) / 6][player_rolling[l2]][player_upsidedown[l2]]->blit((player_x_8[l2]) + player_shown_x[l] - (player_x_8[l]) -
-                                                                                                     10, (player_y_8[l2]) - 10);
-
-        } else {
-            if (in_closing[l2] <= 12 && player_exists[l2] && !plane_coming[l2])
-                plane_crash[(in_closing[l2] >> 1) - 1]->blit((player_x_8[l2]) + player_shown_x[l] - (player_x_8[l]) - 10, (player_y_8[l2]) - 10);
-
         }
-
-    if (config.shots_visible)
-        for (l2 = 0; l2 < MAX_SHOTS; l2++) {
-            if (shots_flying_x[l2])
-                putpix((shots_flying_x[l2] >> 8) + player_shown_x[l] - (player_x_8[l]), (shots_flying_y[l2] >> 8), SHOTS_COLOR, 0, 0, 319, 199);
-
-        }
-
-    if (config.it_shots_visible)
-        for (l2 = 0; l2 < MAX_ITGUN_SHOTS; l2++) {
-            if (itgun_shot_x[l2])
-                putpix((itgun_shot_x[l2] >> 8) + player_shown_x[l] - (player_x_8[l]), (itgun_shot_y[l2] >> 8), ITGUN_SHOT_COLOR, 0, 0, 319, 199);
-
-        }
-
-    for (l2 = 0; l2 < MAX_FLYING_OBJECTS; l2++) {
-        if (fobjects[l2].x) {
-            switch (fobjects[l2].type) {
-            case FOBJECTS_SMOKE:
-                smoke[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-            case FOBJECTS_SSMOKE:
-                ssmoke[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                 (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-
-            case FOBJECTS_RIFLE:
-                rifle[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-
-            case FOBJECTS_FLAME:
-                if (config.flames)
-                    flames[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                     (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-            case FOBJECTS_WAVE1:
-                wave1[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-            case FOBJECTS_WAVE2:
-                wave2[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-
-            case FOBJECTS_ITEXPLOSION:
-                itexplosion[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                      (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-            case FOBJECTS_EXPLOX:
-                if (fobjects[l2].phase < 0)
-                    break;
-                explox[fobjects[l2].subtype][fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                                       (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-            case FOBJECTS_PARTS:
-                bites[fobjects[l2].phase]->blit((fobjects[l2].x >> 8) + player_shown_x[l] - (player_x_8[l]) - (fobjects[l2].width >> 1),
-                                                (fobjects[l2].y >> 8) - (fobjects[l2].height >> 1));
-                break;
-
-            }
-
-
-        }
-
-    }
-
-
 
     for (l = 0; l < 16; l++)
         if (in_closing[l] >= 88) {
@@ -996,8 +805,26 @@ void kangas_terrain_to_screen(int left_x) {
 }
 
 void vesa_terrain_to_screen(void) {
-    int l, l2, templevel;
+    int l;
 
+    // Draw world
+    if (split_num == 0)
+    {
+        draw_world(0, -4, 0, 0, screen_width_less, screen_height_less);
+    }
+    else if (split_num == 1)
+    {
+        draw_world(-screen_width, 192, 0, 0, screen_width_less, screen_height_less);
+        draw_world(0, -4, 0, 0, screen_width_less, screen_height_less);
+    }
+    else
+    {
+        draw_world(-2 * screen_width, 388, 0, 0, screen_width_less, screen_height_less);
+        draw_world(-screen_width, 192, 0, 0, screen_width_less, screen_height_less);
+        draw_world(0, -4, 0, 0, screen_width_less, screen_height_less);
+    }
+
+    // Update player hangar timer
     for (l = 0; l < 16; l++) {
         if (!player_exists[l])
             continue;
@@ -1006,50 +833,8 @@ void vesa_terrain_to_screen(void) {
             in_closing[l] += 2;
     }
 
+    // Draw hangar menu
     for (l = 0; l < 4; l++) {
-        if (!hangar_x[l])
-            continue;
-
-        templevel = (hangar_x[l] + 27) / screen_width;
-        ovi[hangar_door_frame[l]]->blit(hangar_x[l] + 27 - templevel * screen_width, hangar_y[l] + 3 + templevel * 196 - 4, 0, 0, screen_width_less, screen_height_less);
-
-    }
-
-    if (config.flags)
-        for (l = 0; l < MAX_FLAGS; l++) {
-            if (flags_x[l]) {
-                templevel = flags_x[l] / screen_width;
-                flags[flags_owner[l]][flags_frame[l]]->blit(flags_x[l] - templevel * screen_width, flags_y[l] + templevel * 196 - 4, 0, 0, screen_width_less, screen_height_less);
-
-            }
-        }
-
-
-    for (l = 0; l < MAX_AA_GUNS; l++) {
-        if (!kkbase_x[l])
-            continue;
-
-        templevel = kkbase_x[l] / screen_width;
-
-        if (kkbase_status[l] != 2)
-            kkbase[kkbase_type[l]][kkbase_status[l]][kkbase_frame[l]]->blit(kkbase_x[l] - templevel * screen_width, kkbase_y[l] + templevel * 196 - 4, 0, 0, screen_width_less, screen_height_less);
-        else
-            kkbase[kkbase_type[l]][kkbase_status[l]][kkbase_frame[l] >> 1]->blit(kkbase_x[l] - templevel * screen_width, kkbase_y[l] + templevel * 196 - 4, 0, 0, screen_width_less,
-                                                                                 screen_height_less);
-
-        if (kkbase_x[l] - templevel * screen_width + 26 > screen_width) {
-            if (kkbase_status[l] != 2)
-                kkbase[kkbase_type[l]][kkbase_status[l]][kkbase_frame[l]]->blit(kkbase_x[l] - templevel * screen_width - screen_width, kkbase_y[l] + (templevel + 1) * 196 - 4, 0,
-                                                                                0, screen_width_less, screen_height_less);
-            else
-                kkbase[kkbase_type[l]][kkbase_status[l]][kkbase_frame[l] >> 1]->blit(kkbase_x[l] - templevel * screen_width - screen_width,
-                                                                                     kkbase_y[l] + (templevel + 1) * 196 - 4, 0, 0, screen_width_less, screen_height_less);
-
-        }
-
-    }
-
-    for (l = 0; l < 4; l++)
         if (hangarmenu_active[l]) {
             hangarmenu->blit(200 * l + 20, 0);
             flags[l][7]->blit(200 * l + 20 + 14, 67);
@@ -1076,205 +861,6 @@ void vesa_terrain_to_screen(void) {
             }
 
         }
-
-
-    for (l = 0; l < MAX_INFANTRY; l++) {
-        if (!infan_x[l])
-            continue;
-
-        templevel = infan_x[l] / screen_width;
-
-        switch (infan_state[l]) {
-        case 0:
-            if (infan_frame[l] < 12)
-                infantry_walking[infan_country[l]][infan_direction[l]][infan_frame[l]]->blit(infan_x[l] - templevel * screen_width, infan_y[l] + templevel * 196 - 4, 0,
-                                                                                             0, screen_width_less, screen_height_less);
-            else {
-                if (infan_frame[l] == 12)
-                    infantry_dropping[infan_country[l]][infan_direction[l]]->blit(infan_x[l] - templevel * screen_width, infan_y[l] + templevel * 196 - 4, 0, 0, screen_width_less,
-                                                                                  screen_height_less);
-                else
-                    infantry_after_drop[infan_country[l]][infan_direction[l]]->blit(infan_x[l] - templevel * screen_width, infan_y[l] + templevel * 196 - 4, 0, 0, screen_width_less,
-                                                                                    screen_height_less);
-            }
-            break;
-
-        case 1:
-            infantry_aiming[infan_country[l]][infan_direction[l]][infan_frame[l]]->blit(infan_x[l] - templevel * screen_width, infan_y[l] + templevel * 196 - 4, 0, 0,
-                                                                                        screen_width_less, screen_height_less);
-            break;
-
-        case 2:
-            infantry_shooting[infan_country[l]][infan_direction[l]][infan_frame[l]]->blit(infan_x[l] - templevel * screen_width, infan_y[l] + templevel * 196 - 4, 0, 0,
-                                                                                          screen_width_less, screen_height_less);
-            break;
-
-        case 3:
-            infantry_dying[infan_country[l]][infan_direction[l]][infan_frame[l] >> 1]->blit(infan_x[l] - templevel * screen_width, infan_y[l] + templevel * 196 - 4, 0,
-                                                                                            0, screen_width_less, screen_height_less);
-            break;
-
-        case 4:
-            infantry_wavedeath[infan_country[l]][infan_direction[l]][infan_frame[l] >> 1]->blit(infan_x[l] - templevel * screen_width, infan_y[l] + templevel * 196 - 4,
-                                                                                                0, 0, screen_width_less, screen_height_less);
-            break;
-
-        case 5:
-            infantry_bdying[infan_country[l]][infan_direction[l]][infan_frame[l] >> 1]->blit(infan_x[l] - templevel * screen_width, infan_y[l] + templevel * 196 - 4, 0,
-                                                                                             0, screen_width_less, screen_height_less);
-            break;
-
-        }
-    }
-
-    ///
-    for (l = 0; l < 4; l++) {
-        if (!mekan_x[l])
-            continue;
-
-        templevel = mekan_x[l] / screen_width;
-
-        switch (mekan_status[l]) {
-        case 1:
-            mekan_running[mekan_frame[l]][mekan_direction[l]]->blit(mekan_x[l] - templevel * screen_width, mekan_y[l] + templevel * 196 - 4, 0, 0, screen_width_less, screen_height_less);
-            break;
-
-        case 2:
-            mekan_pushing[0][mekan_frame[l]][mekan_direction[l]]->blit(mekan_x[l] - templevel * screen_width, mekan_y[l] + templevel * 196 - 4, 0, 0, screen_width_less, screen_height_less);
-            break;
-
-        case 3:
-            mekan_pushing[1][mekan_frame[l]][mekan_direction[l]]->blit(mekan_x[l] - templevel * screen_width, mekan_y[l] + templevel * 196 - 4, 0, 0, screen_width_less, screen_height_less);
-            break;
-
-
-        }
-
-    }
-
-    for (l2 = 0; l2 < 16; l2++) {
-        templevel = (((player_x_8[l2]) - 10) / screen_width);
-        if (!in_closing[l2] && player_exists[l2] && !plane_coming[l2]) {
-            if (l2 < 4) {
-                if (hangarmenu_active[l2])
-                    continue;
-
-            }
-
-            planes[l2][(player_angle[l2] >> 8) / 6][player_rolling[l2]][player_upsidedown[l2]]->blit(((player_x_8[l2]) - 10) - templevel * screen_width,
-                                                                                                     ((player_y_8[l2]) - 10) + templevel * 196 - 4, 0,
-                                                                                                     templevel * 196, screen_width_less, screen_height_less);
-
-        } else {
-            if (in_closing[l2] <= 12 && player_exists[l2] && !plane_coming[l2])
-                plane_crash[(in_closing[l2] >> 1) - 1]->blit(((player_x_8[l2]) - 10) - templevel * screen_width, ((player_y_8[l2]) - 10) + templevel * 196 - 4, 0,
-                                                             templevel * 196, screen_width_less, screen_height_less);
-
-        }
-    }
-
-    for (l2 = 0; l2 < 16; l2++) {
-        templevel = (((player_x_8[l2]) - 10) / screen_width);
-
-        if ((player_x_8[l2]) - 10 - templevel * screen_width + 20 > screen_width) {
-            if (!in_closing[l2] && player_exists[l2] && !plane_coming[l2])
-                planes[l2][(player_angle[l2] >> 8) / 6][player_rolling[l2]][player_upsidedown[l2]]->blit(((player_x_8[l2]) - 10) - templevel * screen_width - screen_width,
-                                                                                                         ((player_y_8[l2]) - 10) + (templevel + 1) * 196 - 4, 0,
-                                                                                                         (templevel + 1) * 196, screen_width_less, screen_height_less);
-            else {
-                if (in_closing[l2] <= 12 && player_exists[l2] && !plane_coming[l2])
-                    plane_crash[(in_closing[l2] >> 1) - 1]->blit(((player_x_8[l2]) - 10) - (((player_x_8[l2]) - 10) / screen_width) * screen_width - screen_width,
-                                                                 ((player_y_8[l2]) - 10) + (templevel + 1) * 196 - 4, 0, (templevel + 1) * 196, screen_width_less, screen_height_less);
-            }
-        }
-    }
-
-    if (config.shots_visible)
-        for (l2 = 0; l2 < MAX_SHOTS; l2++) {
-            if (shots_flying_x[l2])
-                putpix((shots_flying_x[l2] >> 8) - ((shots_flying_x[l2] >> 8) / screen_width) * screen_width,
-                       (shots_flying_y[l2] >> 8) + ((shots_flying_x[l2] >> 8) / screen_width) * 196 - 4, SHOTS_COLOR, 0, 0, screen_width_less, screen_height_less);
-
-        }
-
-    if (config.it_shots_visible)
-        for (l2 = 0; l2 < MAX_ITGUN_SHOTS; l2++) {
-            if (itgun_shot_x[l2])
-                putpix((itgun_shot_x[l2] >> 8) - ((itgun_shot_x[l2] >> 8) / screen_width) * screen_width, (itgun_shot_y[l2] >> 8) + ((itgun_shot_x[l2] >> 8) / screen_width) * 196 - 4,
-                       ITGUN_SHOT_COLOR, 0, 0, screen_width_less, screen_height_less);
-
-        }
-
-    for (l2 = 0; l2 < MAX_BOMBS; l2++) {
-        if (bomb_x[l2]) {
-            templevel = (((bomb_x[l2] >> 8) - (4)) / screen_width);
-            bomb[(bomb_angle[l2] >> 8) / 6]->blit(((bomb_x[l2] >> 8) - (4)) - templevel * screen_width,
-                                                  ((bomb_y[l2] >> 8) - (4)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-        }
-    }
-
-    for (l2 = 0; l2 < MAX_FLYING_OBJECTS; l2++) {
-        if (fobjects[l2].x) {
-            templevel = (((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) / screen_width);
-            switch (fobjects[l2].type) {
-            case FOBJECTS_SMOKE:
-                smoke[fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-            case FOBJECTS_SSMOKE:
-                ssmoke[fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                 ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-
-            case FOBJECTS_RIFLE:
-                rifle[fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-
-            case FOBJECTS_FLAME:
-                if (config.flames)
-                    flames[fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                     ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-            case FOBJECTS_WAVE1:
-                wave1[fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-            case FOBJECTS_WAVE2:
-                wave2[fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-
-            case FOBJECTS_ITEXPLOSION:
-                itexplosion[fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                      ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-
-            case FOBJECTS_EXPLOX:
-                if (fobjects[l2].phase < 0)
-                    break;
-                explox[fobjects[l2].subtype][fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                                       ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0,
-                                                                       templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-            case FOBJECTS_PARTS:
-                bites[fobjects[l2].phase]->blit(((fobjects[l2].x >> 8) - (fobjects[l2].width >> 1)) - templevel * screen_width,
-                                                ((fobjects[l2].y >> 8) - (fobjects[l2].height >> 1)) + templevel * 196 - 4, 0, templevel * 196, screen_width_less, screen_height_less);
-                break;
-
-            }
-
-
-        }
-
     }
 
 	//Icons

@@ -193,7 +193,6 @@ void init_video(void) {
 
 static int init_mode(int new_mode, const char *paletname) {
     Uint32 mode_flags;
-    const SDL_VideoInfo *vi;
     int las, las2;
     int w = (new_mode == SVGA_MODE) ? screen_width : 320;
     int h = (new_mode == SVGA_MODE) ? screen_height : 200;
@@ -223,8 +222,8 @@ static int init_mode(int new_mode, const char *paletname) {
         }
     }
     /* else vircr is preallocated in init_video */
-    vi = SDL_GetVideoInfo();
-    video_state.haverealpalette = (vi->vfmt->palette != NULL);
+
+    video_state.haverealpalette = (video_state.surface->format->palette != NULL);
 
     dksopen(paletname);
 

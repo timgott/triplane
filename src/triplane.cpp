@@ -1484,7 +1484,6 @@ void do_debug_trace(void) {
 void main_engine(void) {
     int preview_mode = 0;
     int l, l2, flag = 1;
-    int xx, yy;
 
     quit_flag = 0;
 
@@ -1590,47 +1589,7 @@ void main_engine(void) {
     }
 
     if (current_mode == SVGA_MODE) {
-
         tyhjaa_vircr();
-
-		if (split_num == 0)
-		{
-			maisema->blit(0, -4, 0, 0, screen_width_less, screen_height_less);
-		}
-		else if (split_num == 1)
-		{
-			maisema->blit(-screen_width, 192, 0, 0, screen_width_less, screen_height_less);
-			maisema->blit(0, -4, 0, 0, screen_width_less, screen_height_less);
-		}
-		else
-		{
-			maisema->blit(-2 * screen_width, 388, 0, 0, screen_width_less, screen_height_less);
-			maisema->blit(-screen_width, 192, 0, 0, screen_width_less, screen_height_less);
-			maisema->blit(0, -4, 0, 0, screen_width_less, screen_height_less);
-		}
-
-        for (l = 0; l < MAX_STRUCTURES; l++) {
-            if (structures[l][0] != NULL) {
-                if (leveldata.struct_hit[l])
-                    continue;
-
-                structures[l][0]->blit(leveldata.struct_x[l] - (leveldata.struct_x[l] / screen_width) * screen_width,
-                                       leveldata.struct_y[l] + (leveldata.struct_x[l] / screen_width) * 196 - 4);
-
-                structures[l][0]->info(&xx, &yy);
-
-                if ((leveldata.struct_x[l] - (leveldata.struct_x[l] / screen_width) * screen_width) + xx > screen_width)
-                    structures[l][0]->blit(leveldata.struct_x[l] - (leveldata.struct_x[l] / screen_width) * screen_width - screen_width,
-                                           leveldata.struct_y[l] + (leveldata.struct_x[l] / screen_width + 1) * 196 - 4);
-
-            }
-
-        }
-
-        standard_background = new Bitmap(0, 0, screen_width, screen_height);
-        standard_background->blit(0, 0, 0, 0, screen_width_less, screen_height_less);
-
-
     } else {
         board->blit(0, 0);
     }
@@ -1841,8 +1800,9 @@ void main_engine(void) {
             do_mekan();
         }
 
-		if (config.svga)
-			vesa_terrain_to_screen();
+        if (config.svga) {
+            vesa_terrain_to_screen();
+        }
 		else
 		{
 			if (solo_mode == -1)
@@ -1911,18 +1871,10 @@ void main_engine(void) {
 
         do_debug_trace();
 
-        if (current_mode == SVGA_MODE) {
-            do_all_clear(0);    ///
-
-        }
-
-
         rotate_water_palet();
 
-        if (current_mode == VGA_MODE) {
-            if (solo_mode == -1)
-                do_all(1);
-        }
+        if (solo_mode == -1 || current_mode == SVGA_MODE)
+            do_all(1);
 
 
         if (playing_solo && hangarmenu_active[solo_country]) {
