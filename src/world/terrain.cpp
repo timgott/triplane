@@ -641,9 +641,6 @@ void solo_terrain_to_screen(void) {
     if (player_points[l] < 0)
         fontti->printf(142, 3, "-");
 
-    // Draw objects (in front of UI)
-    draw_objects(player_shown_x[l] - (player_x_8[l]), 0, 0, 0, screen_width_less, screen_height_less);
-    
     if (hangarmenu_active[l]) {
 
         hangarmenu->blit(0, 15);
@@ -677,6 +674,9 @@ void solo_terrain_to_screen(void) {
         }
     }
 
+        // Draw objects (in front of UI)
+    draw_objects(player_shown_x[l] - (player_x_8[l]), 0, 0, 0, screen_width_less, screen_height_less);
+    
     // draw radar markers
     for (l2 = 0; l2 < 16; l2++)
         if (!in_closing[l2] && player_exists[l2] && !plane_coming[l2]) {
