@@ -1407,30 +1407,6 @@ void detect_collision(void) {
     }
 }
 
-static void solo_do_all(void) {
-    int x_offset = 160;
-
-    // Compute player's plane location on screen and corresponding
-    // offset of the background bitmap
-
-    if (((player_x_8[solo_country]) - x_offset + 320) > NUMBER_OF_SCENES * 160)
-        x_offset -= NUMBER_OF_SCENES * 160 - ((player_x_8[solo_country]) - x_offset + 320);
-
-    if (((player_x_8[solo_country]) - x_offset) < 0)
-        x_offset += player_x_8[solo_country] - x_offset;
-
-    x_offset -= player_x_8[solo_country];
-    x_offset = -x_offset;
-
-    // draw double bufffer to screen
-    do_all();
-
-    // initialize double buffer back to background image
-    // background image 2400x200 (2400 == NUMBER_OF_SCENES*160)
-    // surface 320x200
-    maisema->blit(-x_offset, 0);
-}
-
 /*
  * The following function has been adapted from
  * linux-2.6.18/storage/multipath-tools/kpartx/crc32.c with the
@@ -1809,7 +1785,6 @@ void main_engine(void) {
 				terrain_to_screen();
 			else
 			{
-				solo_do_all();
 				solo_terrain_to_screen();
 			}
 		}		       
@@ -1873,8 +1848,7 @@ void main_engine(void) {
 
         rotate_water_palet();
 
-        if (solo_mode == -1 || current_mode == SVGA_MODE)
-            do_all(1);
+        do_all(1);
 
 
         if (playing_solo && hangarmenu_active[solo_country]) {
