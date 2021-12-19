@@ -3642,8 +3642,8 @@ void handle_parameters(void) {
         split_num = 1;
     }
 
-    if (findparameter("-fademenus")) {
-        enable_menu_transitions = 1;
+    if (findparameter("-nofades")) {
+        enable_menu_transitions = 0;
     }
 }
 

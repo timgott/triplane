@@ -37,7 +37,7 @@ int draw_with_vircr_mode = 1;
 int pixel_multiplier = 1;       /* current pixel multiplier */
 int pixel_multiplier_vga = 1, pixel_multiplier_svga = 1;
 int wantfullscreen = 1;
-int enable_menu_transitions = 0; /* random fade effect between menus */
+int enable_menu_transitions = 1; /* random fade effect between menus */
 
 //Screen resolution
 int screen_width = -1; /* set by init_resolution */

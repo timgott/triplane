@@ -42,7 +42,7 @@ void horisontal_split(void) {
         upper->blit(0, 0 - c1_scaled);
         lower->blit(0, half + c1_scaled);
         do_all();
-        nopeuskontrolli(60); // Wait until next frame (60fps)
+        nopeuskontrolli(120); // Wait until next frame (60fps)
         c1 += c2;
         c2++;
     }
@@ -72,7 +72,7 @@ void vertical_split() {
         left->blit(0 - c1_scaled, 0);
         right->blit(half + c1_scaled, 0);
         do_all();
-        nopeuskontrolli(60);
+        nopeuskontrolli(120);
         c1 += c2;
         c2++;
     }
@@ -95,7 +95,7 @@ void pixel_fade(void) {
             putpix(x, y, 0, 0, 0, w-1, w-1);
         }
         do_all();
-        nopeuskontrolli(60);
+        nopeuskontrolli(120);
     }
     tyhjaa_vircr();
     do_all();
@@ -144,7 +144,7 @@ void partial_fade(void) {
                     putpix(c3, c - c2, next_color[vircr[c3 + (c - c2) * 320]], 0, 0, 319, 199);
         }
         do_all();
-        nopeuskontrolli(60);
+        nopeuskontrolli(240);
     }
     tyhjaa_vircr();
     do_all();

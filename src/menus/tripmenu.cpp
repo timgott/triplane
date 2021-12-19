@@ -3119,7 +3119,7 @@ void credits_menu(void) {
         grid3->printf(205, 110, "Code & Project management:\nTeemu J. Takanen");
         grid3->printf(kohta2, 140, "Special Thanks:");
         grid3->printf(45, 160, "Mikko Kinnunen\nNiko Salminen\nPekka Pulli");
-        grid3->printf(205, 160, "Antti Lehtoranta\nJuha Rytk”nen\nJoonas Joensuu");
+        grid3->printf(205, 160, "Antti Lehtoranta\nJuha Rytkï¿½nen\nJoonas Joensuu");
 
 
 
@@ -3445,8 +3445,6 @@ void main_menu(void) {
                 main_engine_random_seed = full_seed;
                 ////
 
-                init_vga("PALET5");
-
                 for (l = 0; l < 16; l++) {
                     player_exists[l] = 0;
                     plane_present[l] = 0;
@@ -3518,13 +3516,17 @@ void main_menu(void) {
 
                 wait_mouse_relase();
 
-                if (config.svga && solo_mode == -1)
+                if (config.svga && solo_mode == -1) {
                     if (!findparameter("-debugnographics")) {
                         if (findparameter("-black"))
                             init_vesa("PALET3");
                         else
                             init_vesa("PALET5");
                     }
+                }
+                else {
+                    init_vga("PALET5");
+                }
 
                 main_engine();
 
