@@ -39,8 +39,8 @@ int pixel_multiplier_vga = 1, pixel_multiplier_svga = 1;
 int wantfullscreen = 1;
 
 //Screen resolution
-int screen_width = 800;
-int screen_height = 600;
+int screen_width = -1; /* set by init_resolution */
+int screen_height = -1;
 int screen_width_less = screen_width - 1;
 int screen_height_less = screen_height - 1;
 
@@ -107,8 +107,8 @@ void do_all(int do_retrace) {
     if (draw_with_vircr_mode) {
         if (pixel_multiplier > 1) {
             int i, j, k;
-            int w = (current_mode == VGA_MODE) ? 320 : screen_width;
-            int h = (current_mode == VGA_MODE) ? 200 : screen_height;
+            int w = screen_width;
+            int h = screen_height;
             uint8_t *in = vircr, *out = (uint8_t *) video_state.surface->pixels;
             /* optimized versions using 32-bit and 16-bit writes when possible */
             if (pixel_multiplier == 4 && sizeof(char *) >= 4) { /* word size >= 4 */
@@ -191,11 +191,29 @@ void init_video(void) {
     }
 }
 
+static void init_resolution(int width, int height){	
+	screen_width = width;
+	screen_height = height;
+	screen_width_less = screen_width - 1;
+	screen_height_less = screen_height - 1;
+}
+
 static int init_mode(int new_mode, const char *paletname) {
     Uint32 mode_flags;
     int las, las2;
-    int w = (new_mode == SVGA_MODE) ? screen_width : 320;
-    int h = (new_mode == SVGA_MODE) ? screen_height : 200;
+
+    switch (new_mode) {
+        case VGA_MODE:
+            init_resolution(320, 200);
+            break;
+        case SVGA_MODE:
+            // 2400x208, 1200x404, 800x600
+            int rows = split_num+1;
+            int w = 2400 / rows;
+            int h = 12 + rows * 196;
+            init_resolution(w, h);
+            break;
+    }
 
     init_video();
 
@@ -211,6 +229,8 @@ static int init_mode(int new_mode, const char *paletname) {
 
     pixel_multiplier = (new_mode == SVGA_MODE) ? pixel_multiplier_svga : pixel_multiplier_vga;
 
+    int w = screen_width;
+    int h = screen_height;
     video_state.surface = SDL_SetVideoMode(w * pixel_multiplier, h * pixel_multiplier, 8, mode_flags);
     assert(video_state.surface);
 

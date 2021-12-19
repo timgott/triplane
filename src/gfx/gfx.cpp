@@ -37,11 +37,7 @@ void putpix(int x, int y, unsigned char c, int x1, int y1, int x2, int y2) {
     if (y > y2)
         return;
     if (update_vircr_mode) {
-        if (current_mode == VGA_MODE) {
-            vircr[x + (y << 8) + (y << 6)] = c;
-        } else {
-            vircr[x + y * screen_width] = c;
-        }
+        vircr[x + y * screen_width] = c;
     }
 
     if (!draw_with_vircr_mode)
@@ -91,12 +87,7 @@ void fill_vircr(int x1, int y1, int x2, int y2, unsigned char vari) {
 
 void tyhjaa_vircr(void) {
     if (standard_background == NULL) {
-        if (current_mode == VGA_MODE) {
-            fill_vircr(0, 0, 319, 199, 0);
-        } else {
-            assert(current_mode == SVGA_MODE);
-            fill_vircr(0, 0, screen_width_less, screen_height_less, 0);
-        }
+        fill_vircr(0, 0, screen_width_less, screen_height_less, 0);
 
         do_isa_clear();
     }

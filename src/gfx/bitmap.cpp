@@ -291,23 +291,15 @@ void Bitmap::blit(int xx, int yy, int rx, int ry, int rx2, int ry2) {
     int xi, yi, tx, ty;
     SDL_Rect clip, pos;
 
-    if (current_mode == SVGA_MODE) {
-        if (rx == 0 && ry == 0 && rx2 == 319 && ry2 == 199) {
-            rx2 = screen_width_less;
-            ry2 = screen_height_less;
-        }
-        if (rx2 > screen_width_less)
-            rx2 = screen_width_less;
-        if (ry2 > screen_height_less)
-            ry2 = screen_height_less;
-        bwidth = screen_width;
-    } else {
-        if (rx2 > 319)
-            rx2 = 319;
-        if (ry2 > 199)
-            ry2 = 199;
-        bwidth = 320;
+    if (rx == 0 && ry == 0 && rx2 == 319 && ry2 == 199) {
+        rx2 = screen_width_less;
+        ry2 = screen_height_less;
     }
+    if (rx2 > screen_width_less)
+        rx2 = screen_width_less;
+    if (ry2 > screen_height_less)
+        ry2 = screen_height_less;
+    bwidth = screen_width;
 
     if (rx < 0)
         rx = 0;

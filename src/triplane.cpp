@@ -378,7 +378,6 @@ void init_data(void);
 void do_aftermath(int show_it_all);
 void airfield_checks(void);
 void handle_parameters(void);
-void init_resolution(int width, int height);
 void load_level(void);
 void clear_level(void);
 void do_flags(void);
@@ -1444,11 +1443,7 @@ void do_debug_trace(void) {
         int len;
         uint32_t vircr_checksum;
 
-        if (current_mode == VGA_MODE) {
-            len = 320 * 200;
-        } else {
-            len = screen_width * screen_height;
-        }
+        len = screen_width * screen_height;
 
         vircr_checksum = crc32_le(~0, vircr, len);
 
@@ -3641,20 +3636,11 @@ void handle_parameters(void) {
 
 	if (findparameter("-nosplit")) {
 		split_num = 0;
-		init_resolution(2400, 208);
 	}
 
 	if (findparameter("-1split")) {
 		split_num = 1;
-		init_resolution(1200, 404);
 	}		
-}
-
-void init_resolution(int width, int height){	
-	screen_width = width;
-	screen_height = height;
-	screen_width_less = screen_width - 1;
-	screen_height_less = screen_height - 1;
 }
 
 int main(int argc, char *argv[]) {
