@@ -22,20 +22,27 @@
 #include "gfx/fades.h"
 #include "gfx/gfx.h"
 #include "util/wutil.h"
+#include "io/timing.h"
 
 void horisontal_split(void) {
     Bitmap *upper;
     Bitmap *lower;
     int c1, c2 = 1;
 
-    upper = new Bitmap(0, 0, 320, 100);
-    lower = new Bitmap(0, 100, 320, 100);
+    int half = screen_height/2;
+    upper = new Bitmap(0, 0, screen_width, half);
+    lower = new Bitmap(0, half, screen_width, half);
 
     c1 = 0;
     while (c1 < 150) {
-        upper->blit(0, 0 - c1);
-        lower->blit(0, 100 + c1);
-        do_all_clear();
+        // Transform from VGA height to full window
+        int c1_scaled = c1 * screen_height / 200;
+
+        tyhjaa_vircr(); // Clear to black
+        upper->blit(0, 0 - c1_scaled);
+        lower->blit(0, half + c1_scaled);
+        do_all();
+        nopeuskontrolli(60); // Wait until next frame (60fps)
         c1 += c2;
         c2++;
     }
@@ -50,16 +57,22 @@ void vertical_split() {
     Bitmap *right;
     int c1, c2;
 
-    left = new Bitmap(0, 0, 160, 200);
-    right = new Bitmap(160, 0, 160, 200);
+    int half = screen_width / 2;
+    left = new Bitmap(0, 0, half, screen_height);
+    right = new Bitmap(half, 0, half, screen_height);
 
     c1 = 0;
     c2 = 1;
 
     while (c1 < 200) {
-        left->blit(0 - c1, 0);
-        right->blit(160 + c1, 0);
-        do_all_clear();
+        // Transform from VGA width to full window
+        int c1_scaled = c1 * screen_width / 320;
+
+        tyhjaa_vircr(); // Clear to black
+        left->blit(0 - c1_scaled, 0);
+        right->blit(half + c1_scaled, 0);
+        do_all();
+        nopeuskontrolli(60);
         c1 += c2;
         c2++;
     }
@@ -73,13 +86,16 @@ void vertical_split() {
 void pixel_fade(void) {
     int c1, c2;
 
+    int w = screen_width;
+    int h = screen_height;
     for (c1 = 0; c1 < 20; c1++) {
-        for (c2 = 0; c2 < 7500; c2++) {
-            int r = wrandom(64000);
-            int x = r % 320, y = r / 320;
-            putpix(x, y, 0, 0, 0, 319, 199);
+        for (c2 = 0; c2 < w*h/8; c2++) {
+            int r = wrandom(w * h);
+            int x = r % w, y = r / w;
+            putpix(x, y, 0, 0, 0, w-1, w-1);
         }
         do_all();
+        nopeuskontrolli(60);
     }
     tyhjaa_vircr();
     do_all();
@@ -128,6 +144,7 @@ void partial_fade(void) {
                     putpix(c3, c - c2, next_color[vircr[c3 + (c - c2) * 320]], 0, 0, 319, 199);
         }
         do_all();
+        nopeuskontrolli(60);
     }
     tyhjaa_vircr();
     do_all();
