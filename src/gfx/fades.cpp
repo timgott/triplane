@@ -151,14 +151,11 @@ void partial_fade(void) {
 }
 
 void random_fade_out(void) {
-    int t;
-
-    t = wrandom(5);
-
-    if (current_mode == SVGA_MODE) {
-        do_all_clear();
+    if (!enable_menu_transitions || current_mode == SVGA_MODE) {
         return;
     }
+
+    int t = wrandom(5);
 
     switch (t) {
     case 0:

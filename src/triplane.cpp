@@ -3634,13 +3634,17 @@ void handle_parameters(void) {
         draw_with_vircr_mode = 0;
     }
 
-	if (findparameter("-nosplit")) {
-		split_num = 0;
-	}
+    if (findparameter("-nosplit")) {
+        split_num = 0;
+    }
 
-	if (findparameter("-1split")) {
-		split_num = 1;
-	}		
+    if (findparameter("-1split")) {
+        split_num = 1;
+    }
+
+    if (findparameter("-fademenus")) {
+        enable_menu_transitions = 1;
+    }
 }
 
 int main(int argc, char *argv[]) {

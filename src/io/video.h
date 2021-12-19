@@ -59,6 +59,7 @@ extern int update_vircr_mode;
 extern int draw_with_vircr_mode;
 extern int pixel_multiplier_vga, pixel_multiplier_svga;
 extern int wantfullscreen;
+extern int enable_menu_transitions;
 
 //Screen resolution
 extern int screen_width;
